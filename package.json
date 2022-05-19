@@ -1,0 +1,26 @@
+{
+  "name": "rgbcurvedistortioneffect",
+  "version": "1.0.0",
+  "description": "<br>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsweetpotato/RGBdistortEffect.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jsweetpotato/RGBdistortEffect/issues"
+  },
+  "homepage": "https://github.com/jsweetpotato/RGBdistortEffect#readme",
+  "dependencies": {
+    "three": "^0.140.2"
+  },
+  "devDependencies": {
+    "parcel": "^2.5.0"
+  }
+}
