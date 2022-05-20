@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { images } from "./images.js";
-
-console.log(images);
+import images from "./images.js";
+import vertex from "./shaders/vertex.glsl";
+import fragment from "./shaders/fragment.glsl";
 
 // 선형보간 함수
 // https://youtu.be/WNoizdtEPA4
@@ -15,22 +15,21 @@ let targetX = 0;
 let targetY = 0;
 
 // load image textures for Mesh
-const texture1 = new THREE.TextureLoader().load(images.image1);
-const texture2 = new THREE.TextureLoader().load(images.image2);
-const texture3 = new THREE.TextureLoader().load(images.image3);
-const texture4 = new THREE.TextureLoader().load(images.image4);
+const textureOne = new THREE.TextureLoader().load(images.imageOne);
+const textureTwo = new THREE.TextureLoader().load(images.imageTwo);
+const textureThree = new THREE.TextureLoader().load(images.imageThree);
+const textureFour = new THREE.TextureLoader().load(images.imageFour);
 
 class WebGL {
   constructor() {
     this.container = document.querySelector("main");
     this.links = [...document.querySelectorAll("li")];
-
     this.scene = new THREE.Scene();
     this.perspective = 1000; // Camera perespective / distance on the z axis
     this.sizes = new THREE.Vector2(0, 0); // Mesh sizes
     this.offset = new THREE.Vector2(0, 0); // Mesh position
-    this.uniform = {
-      uTextture: { value: texture1 },
+    this.uniforms = {
+      uTexture: { value: new THREE.TextureLoader().load(images.imageThree) },
       uAlpha: { value: 0.0 },
       uOffset: { value: new THREE.Vector2(0.0, 0.0) },
     };
@@ -39,21 +38,23 @@ class WebGL {
       link.addEventListener("mouseenter", () => {
         switch (idx) {
           case 0:
-            this.uniform.uTextture.value = texture1;
+            this.uniforms.uTexture.value = textureOne;
             break;
           case 1:
-            this.uniform.uTextture.value = texture2;
+            this.uniforms.uTexture.value = textureTwo;
             break;
           case 2:
-            this.uniform.uTextture.value = texture3;
+            this.uniforms.uTexture.value = textureThree;
             break;
           case 3:
-            this.uniform.uTextture.value = texture4;
+            this.uniforms.uTexture.value = textureFour;
             break;
-          default:
-            return;
         }
       });
+
+      // link.addEventListener("mouseleave", () => {
+      //   this.uniforms.uAlpha.value = lerp(this.uniforms.uAlpha.value, 0.0, 0.1);
+      // });
     });
 
     this.addEventListeners(document.querySelector("ul"));
@@ -75,35 +76,45 @@ class WebGL {
     };
   }
 
-  onMousemove() {
-    window.addEventListener("mousemove", ({ clientX, clientY }) => {
-      targetX = clientX;
-      targetY = clientY;
-    });
-  }
-
   addEventListeners(element) {
     element.addEventListener("mouseenter", () => {
-      this.linkHover = true;
+      this.linkHovered = true;
     });
     element.addEventListener("mouseleave", () => {
-      this.linkHover = false;
+      this.linkHovered = false;
     });
   }
 
   setupCamera() {
-    //Readjust dimentions on window resize
+    // Readjust dimentions on window resize
     window.addEventListener("resize", this.onWindowResize.bind(this));
 
     let fov = (180 * (2 * Math.atan(this.viewport.height / 2 / this.perspective))) / Math.PI;
     this.camera = new THREE.PerspectiveCamera(fov, this.viewport.aspectRatio, 0.1, 1000);
     this.camera.position.set(0, 0, this.perspective);
 
-    //Renderer / canvas
+    // Renderer / canvas
     this.renderer = new THREE.WebGL1Renderer({ antialias: true, alpha: true });
     this.renderer.setSize(this.viewport.width, this.viewport.height);
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.container.appendChild(this.renderer.domElement);
+  }
+
+  createMesh() {
+    this.geometry = new THREE.PlaneGeometry(1, 1, 20, 20);
+    this.material = new THREE.ShaderMaterial({
+      uniforms: this.uniforms,
+      vertexShader: vertex,
+      fragmentShader: fragment,
+      transparent: true,
+      // wireframe: true,
+      // side: THREE.DoubleSide
+    });
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.sizes.set(250, 350, 1);
+    this.mesh.scale.set(this.sizes.x, this.sizes.y, 1);
+    this.mesh.position.set(this.offset.x, this.offset.y, 0);
+    this.scene.add(this.mesh);
   }
 
   onWindowResize() {
@@ -113,19 +124,38 @@ class WebGL {
     this.camera.updateProjectionMatrix();
   }
 
-  createMesh() {
-    this.geometry = new THREE.PlaneGeometry(1, 1, 20, 20);
-    this.material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    this.mesh = new THREE.Mesh(this.geometry, this.material);
-    this.sizes.set(250, 350);
-    this.mesh.scale.set(this.sizes.x, this.sizes.y);
-    this.mesh.position.set(this.offset.x, this.offset.y);
-    this.scene.add(this.mesh);
+  onMousemove() {
+    window.addEventListener("mousemove", ({ clientX, clientY }) => {
+      targetX = clientX;
+      targetY = clientY;
+    });
   }
+
   render() {
+    this.offset.x = lerp(this.offset.x, targetX, 0.1);
+    this.offset.y = lerp(this.offset.y, targetY, 0.1);
+    this.uniforms.uOffset.value.set((targetX - this.offset.x) * 0.0005, -(targetY - this.offset.y) * 0.0005);
+    // this.mesh.scale.set(this.sizes.x, this.sizes.y)
+    this.mesh.position.set(this.offset.x - window.innerWidth / 2, -this.offset.y + window.innerHeight / 2, 0);
+
+    // set uAlpha when list is hovered / unhovered
+    this.linkHovered
+      ? (this.uniforms.uAlpha.value = lerp(this.uniforms.uAlpha.value, 1.0, 0.2))
+      : (this.uniforms.uAlpha.value = lerp(this.uniforms.uAlpha.value, 0.0, 0.2));
+
+    for (let i = 0; i < this.links.length; i++) {
+      if (this.linkHovered) {
+        this.links[i].style.opacity = 0.2;
+      } else {
+        this.links[i].style.opacity = 1;
+      }
+    }
+
     this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(this.render.bind(this));
+    window.requestAnimationFrame(this.render.bind(this));
   }
 }
 
-new WebGL();
+window.addEventListener("load", () => {
+  new WebGL();
+});
