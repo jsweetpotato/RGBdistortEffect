@@ -4,9 +4,9 @@
 
 <br>
 
-- [ ] THREE.js
-- [ ] Vanila JS
-- [ ] Parcel
+- [x] THREE.js
+- [x] Vanila JS
+- [x] Parcel
 
 start: npx parcel index.html
 
