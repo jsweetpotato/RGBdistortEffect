@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Forum&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Forum&display=swap");
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Forum', cursive;
+  font-family: "Forum", cursive;
   letter-spacing: 2px;
   font-size: 1.6rem;
   color: #131313;
@@ -37,6 +37,7 @@ ul {
 
 ul li {
   position: relative;
+  padding-block: 3vh;
   border-bottom: 1px solid rgba(0, 0, 0, 0.137);
   cursor: pointer;
   transition: 1s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -44,4 +45,8 @@ ul li {
 
 ul li:hover {
   opacity: 1 !important;
+}
+
+img {
+  display: none;
 }

@@ -106,7 +106,7 @@ class WebGL {
       uniforms: this.uniforms,
       vertexShader: vertex,
       fragmentShader: fragment,
-      transparent: true,
+      // transparent: true,
       // wireframe: true,
       // side: THREE.DoubleSide
     });

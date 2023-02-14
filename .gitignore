@@ -1,3 +1,7 @@
 node_modules
 dist
 .parcel-cache
+/js/app.js
+images.js
+package-lock.json
+package.json
